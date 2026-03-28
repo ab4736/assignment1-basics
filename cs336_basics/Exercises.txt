@@ -1,0 +1,43 @@
+Section 1
+a) The Unicode character that chr(0) returns is \x00, which is null
+b) The "repr" representation says "\x00", implying null, while printing it just outputs 
+an empty string
+c) When this character occurs in text, nothing gets printed out for it, and the strings
+around it just treat it like its empty.
+
+
+Section 2
+a) We might prefer to train on UTF-8 Encoded bytes because it uses less bytes to compress,
+which means that there will be less to control. This only happens for ASCII characters though,
+where UTF-8 only uses one byte. But, for non-ASCII characters it can use 3-4 bytes, whereas
+UTF-16 tries to always use 2. UTF-32 has 4 bytes per character no matter what, and is better
+when you need a fixed amount.
+
+
+b) 
+def decode_utf8_bytes_to_str_wrong(bytestring: bytes):
+return ""
+.join([bytes([b]).decode("utf-8") for b in bytestring])
+>>> decode_utf8_bytes_to_str_wrong("hello".encode("utf-8"))
+'hello'
+
+This function is definitely wrong when there is not an ASCII character:
+>>> decode_utf8("hello 牛".encode("utf-8"))
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+  File "<stdin>", line 2, in decode_utf8
+  File "<stdin>", line 2, in <listcomp>
+UnicodeDecodeError: 'utf-8' codec can't decode byte 0xe7 in position 0: unexpected end of data
+>>> decode_utf8("hello".encode("utf-8"))
+'hello'
+>>> 
+
+This is because we are decoding byte by byte, which only works if every character is only
+represented using a single byte, not the case for non-ASCII in UTF-8.
+
+c) I tried:
+print(repr((bytes([int("10111100", 2), int("10101010", 2)])).decode("utf-8")))
+
+This contains an illegal continuation byte as the start byte, and therefore raises an error.
+
+
